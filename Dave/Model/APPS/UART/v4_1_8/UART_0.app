@@ -44,7 +44,7 @@
   <hwResources name="NVIC Node Tx" URI="http://resources/4.1.8/app/UART/0/hwres_nvic_node_tx" resourceGroupUri="resources/1.0.2/peripheral/cpu/0/nvic/interrupt/11" mResGrpUri="peripheral/cpu/0/nvic/interrupt/*">
     <downwardMapList xsi:type="ResourceModel:ResourceGroup" href="../../../HW_RESOURCES/CPU/CPU_0.dd#//@provided.4"/>
   </hwResources>
-  <hwResources name="NVIC Node Rx" URI="http://resources/4.1.8/app/UART/0/hwres_nvic_node_rx" resourceGroupUri="resources/1.0.2/peripheral/cpu/0/nvic/interrupt/10" mResGrpUri="peripheral/cpu/0/nvic/interrupt/*">
+  <hwResources name="NVIC Node Rx" URI="http://resources/4.1.8/app/UART/0/hwres_nvic_node_rx" resourceGroupUri="resources/1.0.2/peripheral/cpu/0/nvic/interrupt/10" constraintType="NONE" mResGrpUri="peripheral/cpu/0/nvic/interrupt/*">
     <downwardMapList xsi:type="ResourceModel:ResourceGroup" href="../../../HW_RESOURCES/CPU/CPU_0.dd#//@provided.0"/>
   </hwResources>
   <hwResources name="NVIC Node Error" URI="http://resources/4.1.8/app/UART/0/hwres_nvic_node_error" resourceGroupUri="" required="false" mResGrpUri="peripheral/cpu/0/nvic/interrupt/*"/>

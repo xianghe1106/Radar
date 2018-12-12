@@ -109,17 +109,7 @@ DAVE_STATUS_t DAVE_Init(void)
   if (init_status == DAVE_STATUS_SUCCESS)
   {
 	 /**  Initialization of UART APP instance UART_0 */
-	 init_status = (DAVE_STATUS_t)UART_Init(&UART_0); 
-   } 
-  if (init_status == DAVE_STATUS_SUCCESS)
-  {
-	 /**  Initialization of TIMER APP instance TIMER_1 */
-	 init_status = (DAVE_STATUS_t)TIMER_Init(&TIMER_1); 
-   } 
-  if (init_status == DAVE_STATUS_SUCCESS)
-  {
-	 /**  Initialization of INTERRUPT APP instance INTERRUPT_1 */
-	 init_status = (DAVE_STATUS_t)INTERRUPT_Init(&INTERRUPT_1); 
+//	 init_status = (DAVE_STATUS_t)UART_Init(&UART_0);
    }  
   return init_status;
 } /**  End of function DAVE_Init */

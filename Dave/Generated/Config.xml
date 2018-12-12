@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
-<Project MotherSystem_Version="" Name="Radar_sense2GoL_T" Path="E:\Project Evaluation\infineon\FW_test\Radar_sense2GoL_T">
+<Project MotherSystem_Version="" Name="Radar_sense2GoL" Path="E:\Project Evaluation\infineon\FW_test\Radar_sense2GoL">
     <COMPILER>
         <Name>ARM_GCC_HOME</Name>
         <Version/>

@@ -58,15 +58,11 @@
 	
 #define main_ISR IRQ_Hdlr_23
 		
-#define SysTick_Handler IRQ_Hdlr_21
-		
 /***********************************************************************************************************************
  * EXTERN DECLARATIONS
 ***********************************************************************************************************************/
 	
 extern const INTERRUPT_t INTERRUPT_0; 
-	
-extern const INTERRUPT_t INTERRUPT_1; 
 	
 #endif  /* INTERRUPT_EXTERN_H */
 

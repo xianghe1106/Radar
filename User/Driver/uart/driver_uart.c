@@ -1,16 +1,12 @@
 /*
-*********************************************************************************************************
-*                                                BSP
-*
-* File    : BSP.c
-* By      : XH
-* Version : V1.0
-*
-* Comments:
-* ---------------
-*     
-*********************************************************************************************************
-*/
+ * driver_uart.c
+ *
+ *  Created on: Dec 11, 2018
+ *      Author: xianghe
+ */
+
+
+
 
 /*
 *********************************************************************************************************
@@ -18,12 +14,9 @@
 *********************************************************************************************************
 */
 
-#include "XMC1300.h"
-#include "cpu.h"
-
-#include "SCH_Core.h"
-
 #include "driver_uart.h"
+#include "xmc_gpio.h"
+#include "xmc_uart.h"
 
 /*
 *********************************************************************************************************
@@ -79,117 +72,67 @@
 *********************************************************************************************************
 */
 
-void BSP_SysTickInit(void)
+
+void Driver_uart_init(void)
 {
-///	SysTick_Config(SystemCoreClock / TICKS_PER_SECOND);
+	XMC_UART_CH_CONFIG_t uart_config;
+	XMC_GPIO_CONFIG_t rx_pin_config;
+	XMC_GPIO_CONFIG_t tx_pin_config;
 
-	INT32U cnts;
+	/* Configure RX pin */
+	rx_pin_config.mode             = XMC_GPIO_MODE_INPUT_TRISTATE;
+	rx_pin_config.output_level     = XMC_GPIO_OUTPUT_LEVEL_HIGH;
+	rx_pin_config.input_hysteresis = XMC_GPIO_INPUT_HYSTERESIS_STANDARD;
+	XMC_GPIO_Init(XMC_GPIO_PORT2, 6, &rx_pin_config);
 
-	cnts = SystemCoreClock / SCH_CFG_TICK_RATE_HZ;
 
-	if(SysTick_Config(cnts))
-	{
-		while(1);	/* Capture error */
-	}
+	/* Configure TX pin */
+	tx_pin_config.mode             = XMC_GPIO_MODE_OUTPUT_PUSH_PULL_ALT6;
+	tx_pin_config.output_level     = XMC_GPIO_OUTPUT_LEVEL_HIGH;
+	XMC_GPIO_Init(XMC_GPIO_PORT2, 0, &tx_pin_config);
+
+	/* UART configuration */
+	uart_config.baudrate      = 19200U;
+	uart_config.data_bits     = 8U;
+	uart_config.frame_length  = 8U;
+	uart_config.stop_bits     = 1U;
+	uart_config.oversampling  = 16U;
+	uart_config.parity_mode   = XMC_USIC_CH_PARITY_MODE_NONE;
+
+	/* Configure UART channel */
+	XMC_UART_CH_Init(XMC_UART0_CH0, &uart_config);
+
+	XMC_UART_CH_SetInputSource(XMC_UART0_CH0, XMC_UART_CH_INPUT_RXD1, USIC0_C0_DX3_P2_6);
+
+	XMC_USIC_CH_SetInputSource(XMC_UART0_CH0, XMC_USIC_CH_INPUT_DX0, 6U);
+	XMC_USIC_CH_SetInputSource(XMC_UART0_CH0, XMC_USIC_CH_INPUT_DX3, 4U);
+	XMC_USIC_CH_SetInputSource(XMC_UART0_CH0, XMC_USIC_CH_INPUT_DX5, 0U);
+
+	/* Start UART channel */
+	XMC_UART_CH_Start(XMC_UART0_CH0);
+
+	XMC_USIC_CH_EnableEvent(XMC_UART0_CH0, XMC_USIC_CH_EVENT_STANDARD_RECEIVE); // enable interrupt RI
+
+
+	XMC_UART_CH_EnableEvent(XMC_UART0_CH0, XMC_UART_CH_EVENT_STANDARD_RECEIVE);
+	XMC_USIC_CH_SetInterruptNodePointer(XMC_UART0_CH0,
+				XMC_USIC_CH_INTERRUPT_NODE_POINTER_RECEIVE, 1);
+
+	/* enable receive interrupt */
+	NVIC_SetPriority(USIC0_1_IRQn,3);// CMSIS function for NVIC control: NVIC_SetPriority(IRQn_t IRQn, uint32_t priority): priority=0..63
+	NVIC_EnableIRQ(USIC0_1_IRQn);    // CMSIS function for NVIC control: enable IRQn
 }
 
 
-void BSP_HardwareInit(void)
+/*
+void IRQ_Hdlr_10(void)
 {
-	/*
-	Note, the Delay_Init() function must be called the sooner the better,
-	other functions may call DelayUs() or DelayMs() function.
-	*/
-//	Delay_Init();
-	
-//	Driver_led_init();
+	 uint16_t received_data;
+	 received_data = XMC_UART_CH_GetReceivedData(XMC_UART0_CH0);  // receive data
+	  XMC_UART_CH_Transmit(XMC_UART0_CH0, received_data);
 
-	Driver_uart_init();
-
+	DIGITAL_IO_ToggleOutput(&LED_BLUE);
 }
-/*------------------------------------------------------------------*-
-
-  BSP_IntDis()
-
-  All cpu interrupt disabled
-  Avoid external or internal interrupt interrupted MCU initialization
-  when MCU startup. 
-
--*------------------------------------------------------------------*/
-void BSP_IntDis(void)
-{
-    CPU_IntDis();
-}
-/*------------------------------------------------------------------*-
-
-  BSP_IntEn()
-
-  When completed the initial work and then open the global interrupt
-
--*------------------------------------------------------------------*/
-void BSP_IntEn(void)
-{
-    CPU_IntEn();
-}
-
-void BSP_WatchdogInit(void)
-{
-
-}
-
-void BSP_FeedDog(void)
-{
-
-}
-
-
-/*------------------------------------------------------------------*-
-
-  Bsp_ExceptionHandle()
-  
-  Mainly deal with RCC_FLAG_PORRST or RCC_FLAG_SFTRST
-
--*------------------------------------------------------------------*/
-void Bsp_ExceptionHandle(void)
-{
-
-}
-
-/*------------------------------------------------------------------*-
-
-  Bsp_SoftReset()
-  
-  Restart firmware
-
--*------------------------------------------------------------------*/
-void Bsp_SoftReset(void)
-{
-
-}
-/*------------------------------------------------------------------*-
-
-  Bsp_SystemReset()
-  
-  SystemReset
-
--*------------------------------------------------------------------*/
-void Bsp_SystemReset(void)
-{
-	__NVIC_SystemReset();
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+*/
 
 

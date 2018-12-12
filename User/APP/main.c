@@ -50,6 +50,7 @@
 
 #include "SCH_Core.h"
 #include "radar.h"
+#include "Protocol.h"
 
 /**********************************************************************************************************************
  * MACROS
@@ -72,6 +73,7 @@ float g_max_velocity = MOTION_MAX_VELOCITY; 				 /**< max velocity to detect mot
 bool g_start = true;										 /**< control for execution of doppler algorithm */
 bool g_uart_start = UART_RAW_DATA;							 /**< control for execution of UART feature to transmit raw IQ from ADC */
 
+void RADAR_TestTime(void);
 /************************************************************************************************************/
 
 /*!
@@ -172,8 +174,8 @@ void radarsense2gol_result( uint32_t *fft_magnitude_array,
 	g_doppler_frequency = calcDopplerFrequency(max_frq_index);
 	g_doppler_velocity = calcDopplerSpeed(g_doppler_frequency);
 
-//	if (g_uart_start)
-//		dumpRawIQ_uint16(g_sampling_data_I, g_sampling_data_Q, (uint16_t)BUFF_SIZE);
+	if (g_uart_start)
+		dumpRawIQ_uint16(g_sampling_data_I, g_sampling_data_Q, (uint16_t)BUFF_SIZE);
 
 	// check results
 	if (motion != XMC_NO_MOTION_DETECT &&			// motion detected
@@ -185,12 +187,12 @@ void radarsense2gol_result( uint32_t *fft_magnitude_array,
 			// turn on red LED, turn off orange and blue LEDs
 //			DIGITAL_IO_SetOutputLow(&LED_RED);
 //			DIGITAL_IO_SetOutputHigh(&LED_ORANGE);
-//			DIGITAL_IO_SetOutputHigh(&LED_BLUE);
+			DIGITAL_IO_SetOutputLow(&LED_BLUE);
 		}
 		else // motion == XMC_MOTION_DETECT_DEPARTING => target is moving away from radar
 		{
 			// turn on orange LED, turn off red and blue LEDs
-//			DIGITAL_IO_SetOutputLow(&LED_ORANGE);
+			DIGITAL_IO_SetOutputLow(&LED_ORANGE);
 //			DIGITAL_IO_SetOutputHigh(&LED_RED);
 //			DIGITAL_IO_SetOutputHigh(&LED_BLUE);
 		}
@@ -198,9 +200,9 @@ void radarsense2gol_result( uint32_t *fft_magnitude_array,
 	else // no motion detected
 	{
 		// turn on blue LED, turn off red and blue LEDs
-/*		DIGITAL_IO_SetOutputLow(&LED_BLUE);
+		DIGITAL_IO_SetOutputHigh(&LED_BLUE);
 		DIGITAL_IO_SetOutputHigh(&LED_ORANGE);
-		DIGITAL_IO_SetOutputHigh(&LED_RED);*/
+//		DIGITAL_IO_SetOutputHigh(&LED_RED);
 
 		// set velocity and frequency to 0 in case of no motion
 		g_doppler_frequency = 0.0;
@@ -215,11 +217,16 @@ void radarsense2gol_result( uint32_t *fft_magnitude_array,
  * \brief Top-level function for the motion detection using radar Sense2GoL board
  */
 
+void TASK_uart(void);
+
 int main(void)
 {
 	bool running = false;
+	SCH_RTC_Type run_time_a, run_time_b;
+	INT16U delta_time;
+	INT8U tx_buffer[10];
 
-	DAVE_Init(); /* Initialization of DAVE APPs  */
+	DAVE_Init();  //Initialization of DAVE APPs
 
 	// turn off all leds
 	DIGITAL_IO_SetOutputHigh(&LED_ORANGE);
@@ -238,20 +245,36 @@ int main(void)
 
 	// register call backs
 	radarsense2gol_regcb_result ( radarsense2gol_result );
+	radarsense2gol_exitmain();
 
-//	TIMER_Start(&TIMER_1);
+	BSP_IntDis();
+
+	SystemInit();
+
+//	UART_SetRXFIFOTriggerLimit(&UART_0, 0);
+
+	BSP_HardwareInit();
+
+	Protocol_init();
 
 	SCH_Init();
 
 	/* Add Task */
-	SCH_Add_Task(RADAR_Test 			, 		1  , 		10   );
+	SCH_Add_Task(RADAR_Test 			, 		1  , 		20   );
+
+	SCH_Add_Task(Protocol_process 		, 		2  , 		1    );//RADAR_TestTime
 
 	SCH_Start();
+
 
 	while (1)
 	{
 		SCH_Dispatch_Tasks();
+		Protocol_preprocessing();
+//		Protocol_process();
 
+#if 0
+		run_time_a = SCH_Get_RTC();
 		if (running == false)
 		{
 			if (g_start == true)
@@ -272,33 +295,99 @@ int main(void)
 
 			/* place your application code for main execution here */
 			/* e.g. communication on peripherals */
-			radarsense2gol_exitmain(); /* only need to be called if
-                               mainexec_enable is enabled during init */
+			radarsense2gol_exitmain(); /* only need to be called if mainexec_enable is enabled during init */
+
 		}
 
+		run_time_b = SCH_Get_RTC();
+
+		delta_time = (run_time_b.minute * 60 * 1000 + run_time_b.second * 1000 + run_time_b.msec) - (run_time_a.minute * 60 * 1000 + run_time_a.second * 1000 + run_time_a.msec);
+
+#endif
 	}
 
 }
 
-/*
-void SysTick_Handler(void)
+void RADAR_TestTime(void)
 {
-	static bool state = false;
+	bool running = false;
+	SCH_RTC_Type run_time_a, run_time_b;
+	INT16U delta_time;
+	INT8U tx_buffer[10];
 
-	TIMER_ClearEvent(&TIMER_1);
-
-	if(state == false)
+	run_time_a = SCH_Get_RTC();
+	if (running == false)
 	{
-		state = true;
-
-		DIGITAL_IO_SetOutputHigh(&LED_RED);
+		if (g_start == true)
+		{
+			running = true;
+			radarsense2gol_start();
+		}
 	}
 	else
 	{
-		state = false;
+		if (g_start == false)
+		{
+			running = false;
+			radarsense2gol_stop();
+		}
 
-		DIGITAL_IO_SetOutputLow(&LED_RED);
+		radarsense2gol_set_detection_threshold(radarsense2gol_algorithm.trigger_det_level);
+
+		/* place your application code for main execution here */
+		/* e.g. communication on peripherals */
+		radarsense2gol_exitmain(); /* only need to be called if mainexec_enable is enabled during init */
+
 	}
+
+	run_time_b = SCH_Get_RTC();
+
+	delta_time = (run_time_b.minute * 60 * 1000 + run_time_b.second * 1000 + run_time_b.msec) - (run_time_a.minute * 60 * 1000 + run_time_a.second * 1000 + run_time_a.msec);
+/*
+	UART_TransmitWord(&UART_0, 0x55);
+	UART_TransmitWord(&UART_0, WORD_HIGH(delta_time));
+	UART_TransmitWord(&UART_0, WORD_LOW(delta_time));
+	UART_TransmitWord(&UART_0, 0xAA);*/
 }
-*/
+
+void TASK_uart(void)
+{
+	INT8U data;
+
+//	UART_TransmitWord(&UART_0, UART_IsRXFIFOEmpty(&UART_0));
+
+//	UART_SetRXFIFOTriggerLimit(&UART_0, 0);
+//	while(1U)
+//	{
+		//Check if receive FIFO event is generated
+		if(UART_GetRXFIFOStatus(&UART_0) & XMC_USIC_CH_RXFIFO_EVENT_STANDARD)
+		{
+			UART_ClearRXFIFOStatus(&UART_0, XMC_USIC_CH_RXFIFO_EVENT_STANDARD);
+			//Read received data
+			data = (uint8_t)XMC_USIC_CH_RXFIFO_GetData((XMC_USIC_CH_t *)&UART_0.channel);
+			//Transmit received data
+//			UART_Transmit(&UART_0, 0xAA, 1);
+//			UART_TransmitWord(&UART_0, data);
+
+			//Read received data
+//			data = (uint8_t)XMC_USIC_CH_RXFIFO_GetData((XMC_USIC_CH_t *)&UART_0.channel);
+			//Transmit received data
+//			UART_Transmit(&UART_0, 0xAA, 1);
+//			UART_TransmitWord(&UART_0, data);
+//			index++;
+//			index = index % 10;
+
+			DIGITAL_IO_ToggleOutput(&LED_BLUE);
+		}
+//	}
+}
+
+uint8_t rec_data[10];
+void EndofReceive()//Callback function for "End of receive" event.
+{
+	DIGITAL_IO_ToggleOutput(&LED_BLUE);
+//UART_Transmit(&UART_0, rec_data, sizeof(rec_data));
+
+}
+
 

@@ -18,6 +18,7 @@
 *********************************************************************************************************
 */
 
+//#include "Bsp.h"
 #include "SCH_Core.h"
 
 /*
@@ -88,7 +89,7 @@ void SCH_Init(void)
 
 	SCH_RTC_Init(0,0,0);
 
-//	BSP_SysTickInit();
+	BSP_SysTickInit();
 }
 
 /*------------------------------------------------------------------*-
@@ -120,8 +121,6 @@ void SysTick_Handler(void)
 
 //	SCH_CRITICAL_ENTER();
 
-	TIMER_ClearEvent(&TIMER_1);
-
 	SCH_Task_Update();
 	
 	SCH_Flag_Update();
@@ -134,6 +133,28 @@ void SysTick_Handler(void)
 
 //	SCH_CRITICAL_EXIT();
 }
+
+/*void SysTick_Update(void)
+{
+//	CPU_SR_ALLOC();
+
+//	SCH_CRITICAL_ENTER();
+
+//	TIMER_ClearEvent(&TIMER_1);
+
+	SCH_Task_Update();
+
+	SCH_Flag_Update();
+
+	SCH_RTC_Update();
+
+//	APP_Task_Update();
+
+//	APP_Time_Update();
+
+//	SCH_CRITICAL_EXIT();
+}*/
+
 
 
 

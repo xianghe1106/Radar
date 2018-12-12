@@ -57,7 +57,7 @@
  * HEADER FILES
  **********************************************************************************************************************/
 #include "uart.h"
-
+#include "Dave.h"
 /***********************************************************************************************************************
  * EXTERN DECLARATIONS
  ***********************************************************************************************************************/
@@ -207,6 +207,13 @@ UART_STATUS_t UART_0_init()
   /*Set priority and enable NVIC node for receive interrupt*/
   NVIC_SetPriority((IRQn_Type)10, 3U);
   NVIC_EnableIRQ((IRQn_Type)10);
+
+	/* enable receive interrupt */
+	XMC_UART_CH_EnableEvent(XMC_UART0_CH0, XMC_UART_CH_EVENT_STANDARD_RECEIVE);
+	XMC_USIC_CH_SetInterruptNodePointer(XMC_UART0_CH0,
+				XMC_USIC_CH_INTERRUPT_NODE_POINTER_RECEIVE, 1);
+//	NVIC_EnableIRQ(USIC0_1_IRQn);
+
   return status;
 }
 /*Interrupt handlers*/
@@ -217,10 +224,11 @@ void UART_0_TX_HANDLER()
 }
 
 /*Receive ISR*/
-void UART_0_RX_HANDLER()
+/*void UART_0_RX_HANDLER()
 {
-  UART_lReceiveHandler(&UART_0);
-}
+	DIGITAL_IO_ToggleOutput(&LED_BLUE);
+//  UART_lReceiveHandler(&UART_0);
+}*/
 
 /*CODE_BLOCK_END*/
 

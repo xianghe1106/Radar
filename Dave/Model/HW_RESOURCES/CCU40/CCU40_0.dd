@@ -260,7 +260,6 @@
     <enumValues xsi:type="ResourceModel:RegEnumValue" value="0b11" description="Forward to CC4ySR3"/>
   </provided>
   <provided xsi:type="ResourceModel:ResourceGroup" name="1" URI="http://resources/1.0.1/peripheral/ccu4/0/cc4/1">
-    <upwardMapList xsi:type="ResourceModel:HWResource" href="../../APPS/TIMER/v4_1_8/TIMER_1.app#//@hwResources.0"/>
     <resourcesList name="ins" requiredResourceUri="http://resources/1.0.1/peripheral/ccu4/0/cc41ins"/>
     <resourcesList name="ins_ev0is" requiredResourceUri="http://resources/1.0.1/peripheral/ccu4/0/cc41ins/ev0is"/>
     <resourcesList name="ins_ev1is" requiredResourceUri="http://resources/1.0.1/peripheral/ccu4/0/cc41ins/ev1is"/>

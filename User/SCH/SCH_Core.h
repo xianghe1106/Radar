@@ -7,7 +7,7 @@
 *********************************************************************************************************
 */
 
-#include "Dave.h"
+#include "XMC1300.h"
 #include "cpu.h"
 //#include "bsp.h"
 
@@ -63,6 +63,8 @@
 void SCH_Init(void);
 
 void SCH_Start(void);
+
+void SysTick_Update(void);
 
 
 #endif 

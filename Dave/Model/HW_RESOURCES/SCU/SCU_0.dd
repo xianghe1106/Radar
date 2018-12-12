@@ -52,5 +52,9 @@
     <resourcesList name="ccucon_gsc" requiredResourceUri="http://resources/132.16.1/peripheral/scu/0/ccucon/gsc40"/>
     <resourcesList name="gsc_enable" requiredResourceUri="http://resources/132.16.1/peripheral/scu/0/ccucon_gsc40_enable"/>
   </provided>
+  <provided xsi:type="ResourceModel:ResourceGroup" name="0" URI="http://resources/132.16.1/peripheral/scu/0/gcu/ccu8_global_enable/0">
+    <resourcesList name="ccucon_gsc" requiredResourceUri="http://resources/132.16.1/peripheral/scu/0/ccucon/gsc80"/>
+    <resourcesList name="gsc_enable" requiredResourceUri="http://resources/132.16.1/peripheral/scu/0/ccucon_gsc80_enable"/>
+  </provided>
   <addressBlock offset="0x0" size="0x10000" usage="registers"/>
 </ResourceModel:Peripheral>
