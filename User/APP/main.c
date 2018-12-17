@@ -51,6 +51,9 @@
 #include "SCH_Core.h"
 #include "radar.h"
 #include "Protocol.h"
+#include "Bsp.h"
+
+#include "driver.h"
 
 /**********************************************************************************************************************
  * MACROS
@@ -187,12 +190,12 @@ void radarsense2gol_result( uint32_t *fft_magnitude_array,
 			// turn on red LED, turn off orange and blue LEDs
 //			DIGITAL_IO_SetOutputLow(&LED_RED);
 //			DIGITAL_IO_SetOutputHigh(&LED_ORANGE);
-			DIGITAL_IO_SetOutputLow(&LED_BLUE);
+			DIGITAL_GPIO_SetOutputLow(&LED_BLUE);
 		}
 		else // motion == XMC_MOTION_DETECT_DEPARTING => target is moving away from radar
 		{
 			// turn on orange LED, turn off red and blue LEDs
-			DIGITAL_IO_SetOutputLow(&LED_ORANGE);
+			DIGITAL_GPIO_SetOutputLow(&LED_ORANGE);
 //			DIGITAL_IO_SetOutputHigh(&LED_RED);
 //			DIGITAL_IO_SetOutputHigh(&LED_BLUE);
 		}
@@ -200,8 +203,8 @@ void radarsense2gol_result( uint32_t *fft_magnitude_array,
 	else // no motion detected
 	{
 		// turn on blue LED, turn off red and blue LEDs
-		DIGITAL_IO_SetOutputHigh(&LED_BLUE);
-		DIGITAL_IO_SetOutputHigh(&LED_ORANGE);
+		DIGITAL_GPIO_SetOutputHigh(&LED_BLUE);
+		DIGITAL_GPIO_SetOutputHigh(&LED_ORANGE);
 //		DIGITAL_IO_SetOutputHigh(&LED_RED);
 
 		// set velocity and frequency to 0 in case of no motion
@@ -222,19 +225,12 @@ void TASK_uart(void);
 int main(void)
 {
 	bool running = false;
-	SCH_RTC_Type run_time_a, run_time_b;
-	INT16U delta_time;
-	INT8U tx_buffer[10];
+//	SCH_RTC_Type run_time_a, run_time_b;
+//	INT16U delta_time;
+//	INT8U tx_buffer[10];
 
 	DAVE_Init();  //Initialization of DAVE APPs
 
-	// turn off all leds
-	DIGITAL_IO_SetOutputHigh(&LED_ORANGE);
-	DIGITAL_IO_SetOutputHigh(&LED_RED);
-	DIGITAL_IO_SetOutputHigh(&LED_BLUE);
-
-	// turn on BGT
-	DIGITAL_IO_SetOutputLow(&BGT24);
 
 	radarsense2gol_init(
 			radarsense2gol_timing,
@@ -251,8 +247,6 @@ int main(void)
 
 	SystemInit();
 
-//	UART_SetRXFIFOTriggerLimit(&UART_0, 0);
-
 	BSP_HardwareInit();
 
 	Protocol_init();
@@ -262,7 +256,10 @@ int main(void)
 	/* Add Task */
 	SCH_Add_Task(RADAR_Test 			, 		1  , 		20   );
 
-	SCH_Add_Task(Protocol_process 		, 		2  , 		1    );//RADAR_TestTime
+	SCH_Add_Task(Protocol_process 		, 		2  , 		10   );//RADAR_TestTime
+
+	SCH_Add_Task(Protocol_heart_beat 	, 		10 , 		16   );//Protocol_heart_beat
+//	SCH_Add_Task(Protocol_heart_beat 	, 		10 , 		100   );//Protocol_heart_beat
 
 	SCH_Start();
 
@@ -273,8 +270,8 @@ int main(void)
 		Protocol_preprocessing();
 //		Protocol_process();
 
-#if 0
-		run_time_a = SCH_Get_RTC();
+#if 1
+//		run_time_a = SCH_Get_RTC();
 		if (running == false)
 		{
 			if (g_start == true)
@@ -299,9 +296,9 @@ int main(void)
 
 		}
 
-		run_time_b = SCH_Get_RTC();
+//		run_time_b = SCH_Get_RTC();
 
-		delta_time = (run_time_b.minute * 60 * 1000 + run_time_b.second * 1000 + run_time_b.msec) - (run_time_a.minute * 60 * 1000 + run_time_a.second * 1000 + run_time_a.msec);
+//		delta_time = (run_time_b.minute * 60 * 1000 + run_time_b.second * 1000 + run_time_b.msec) - (run_time_a.minute * 60 * 1000 + run_time_a.second * 1000 + run_time_a.msec);
 
 #endif
 	}
@@ -311,11 +308,11 @@ int main(void)
 void RADAR_TestTime(void)
 {
 	bool running = false;
-	SCH_RTC_Type run_time_a, run_time_b;
-	INT16U delta_time;
-	INT8U tx_buffer[10];
+//	SCH_RTC_Type run_time_a, run_time_b;
+//	INT16U delta_time;
+//	INT8U tx_buffer[10];
 
-	run_time_a = SCH_Get_RTC();
+//	run_time_a = SCH_Get_RTC();
 	if (running == false)
 	{
 		if (g_start == true)
@@ -340,54 +337,12 @@ void RADAR_TestTime(void)
 
 	}
 
-	run_time_b = SCH_Get_RTC();
+//	run_time_b = SCH_Get_RTC();
 
-	delta_time = (run_time_b.minute * 60 * 1000 + run_time_b.second * 1000 + run_time_b.msec) - (run_time_a.minute * 60 * 1000 + run_time_a.second * 1000 + run_time_a.msec);
-/*
-	UART_TransmitWord(&UART_0, 0x55);
-	UART_TransmitWord(&UART_0, WORD_HIGH(delta_time));
-	UART_TransmitWord(&UART_0, WORD_LOW(delta_time));
-	UART_TransmitWord(&UART_0, 0xAA);*/
+//	delta_time = (run_time_b.minute * 60 * 1000 + run_time_b.second * 1000 + run_time_b.msec) - (run_time_a.minute * 60 * 1000 + run_time_a.second * 1000 + run_time_a.msec);
 }
 
-void TASK_uart(void)
-{
-	INT8U data;
 
-//	UART_TransmitWord(&UART_0, UART_IsRXFIFOEmpty(&UART_0));
 
-//	UART_SetRXFIFOTriggerLimit(&UART_0, 0);
-//	while(1U)
-//	{
-		//Check if receive FIFO event is generated
-		if(UART_GetRXFIFOStatus(&UART_0) & XMC_USIC_CH_RXFIFO_EVENT_STANDARD)
-		{
-			UART_ClearRXFIFOStatus(&UART_0, XMC_USIC_CH_RXFIFO_EVENT_STANDARD);
-			//Read received data
-			data = (uint8_t)XMC_USIC_CH_RXFIFO_GetData((XMC_USIC_CH_t *)&UART_0.channel);
-			//Transmit received data
-//			UART_Transmit(&UART_0, 0xAA, 1);
-//			UART_TransmitWord(&UART_0, data);
-
-			//Read received data
-//			data = (uint8_t)XMC_USIC_CH_RXFIFO_GetData((XMC_USIC_CH_t *)&UART_0.channel);
-			//Transmit received data
-//			UART_Transmit(&UART_0, 0xAA, 1);
-//			UART_TransmitWord(&UART_0, data);
-//			index++;
-//			index = index % 10;
-
-			DIGITAL_IO_ToggleOutput(&LED_BLUE);
-		}
-//	}
-}
-
-uint8_t rec_data[10];
-void EndofReceive()//Callback function for "End of receive" event.
-{
-	DIGITAL_IO_ToggleOutput(&LED_BLUE);
-//UART_Transmit(&UART_0, rec_data, sizeof(rec_data));
-
-}
 
 

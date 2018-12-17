@@ -85,31 +85,6 @@ DAVE_STATUS_t DAVE_Init(void)
   {
 	 /**  Initialization of INTERRUPT APP instance INTERRUPT_0 */
 	 init_status = (DAVE_STATUS_t)INTERRUPT_Init(&INTERRUPT_0); 
-   } 
-  if (init_status == DAVE_STATUS_SUCCESS)
-  {
-	 /**  Initialization of DIGITAL_IO APP instance LED_ORANGE */
-	 init_status = (DAVE_STATUS_t)DIGITAL_IO_Init(&LED_ORANGE); 
-   } 
-  if (init_status == DAVE_STATUS_SUCCESS)
-  {
-	 /**  Initialization of DIGITAL_IO APP instance BGT24 */
-	 init_status = (DAVE_STATUS_t)DIGITAL_IO_Init(&BGT24); 
-   } 
-  if (init_status == DAVE_STATUS_SUCCESS)
-  {
-	 /**  Initialization of DIGITAL_IO APP instance LED_RED */
-	 init_status = (DAVE_STATUS_t)DIGITAL_IO_Init(&LED_RED); 
-   } 
-  if (init_status == DAVE_STATUS_SUCCESS)
-  {
-	 /**  Initialization of DIGITAL_IO APP instance LED_BLUE */
-	 init_status = (DAVE_STATUS_t)DIGITAL_IO_Init(&LED_BLUE); 
-   } 
-  if (init_status == DAVE_STATUS_SUCCESS)
-  {
-	 /**  Initialization of UART APP instance UART_0 */
-//	 init_status = (DAVE_STATUS_t)UART_Init(&UART_0);
    }  
   return init_status;
 } /**  End of function DAVE_Init */

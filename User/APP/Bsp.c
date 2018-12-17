@@ -23,7 +23,7 @@
 
 #include "SCH_Core.h"
 
-#include "driver_uart.h"
+#include "driver.h"
 
 /*
 *********************************************************************************************************
@@ -104,7 +104,10 @@ void BSP_HardwareInit(void)
 	
 //	Driver_led_init();
 
+	Multi_IO_Init();
 	Driver_uart_init();
+
+
 
 }
 /*------------------------------------------------------------------*-

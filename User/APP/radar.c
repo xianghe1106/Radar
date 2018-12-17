@@ -13,6 +13,7 @@
 */
 
 #include "radar.h"
+#include "driver.h"
 
 /*
 *********************************************************************************************************
@@ -63,22 +64,9 @@
 
 void RADAR_Test(void)
 {
-/*	static bool state = false;
-
-	if(state == false)
-	{
-		state = true;
-
-		DIGITAL_IO_SetOutputHigh(&LED_RED);
-	}
-	else
-	{
-		state = false;
-
-		DIGITAL_IO_SetOutputLow(&LED_RED);
-	}*/
-
-	DIGITAL_IO_ToggleOutput(&LED_RED);
+	DIGITAL_GPIO_ToggleOutput(&LED_RED);
+//	DIGITAL_GPIO_ToggleOutput(&LED_ORANGE);
+//	DIGITAL_GPIO_ToggleOutput(&LED_BLUE);
 }
 
 

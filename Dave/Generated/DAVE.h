@@ -75,12 +75,6 @@
 
 #include "INTERRUPT/interrupt.h"
   
-
-#include "DIGITAL_IO/digital_io.h"
-  
-
-#include "UART/uart.h"
-  
 	
 
 /**********************************************************************************************************************

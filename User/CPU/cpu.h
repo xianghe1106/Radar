@@ -112,7 +112,7 @@ typedef  INT32U        							CPU_SR;		/* Defines   CPU status register size (se
 #define WORD_LOW(word)  						((INT8U) ((INT16U)(word) & 255)) 
 #define WORD_HIGH(word)  						((INT8U) ((INT16U)(word) >> 8)) 
 
-#define SET_BIT(REG, BIT)     					((REG) |= (BIT))
+//#define SET_BIT(REG, BIT)     					((REG) |= (BIT))
 
 #define CLEAR_BIT(REG, BIT)   					((REG) &= ~(BIT))
 
@@ -122,12 +122,12 @@ typedef  INT32U        							CPU_SR;		/* Defines   CPU status register size (se
 
 #define WRITE_REG(REG, VAL)   					((REG) = (VAL))
 
-static union 
-{ 
-	char c[4]; 
-	INT32U l; 
-} endian_test = { { 'l', '?', '?', 'b' } };
-#define ENDIANNESS 								((char)endian_test.l)
+//static union
+//{
+//	char c[4];
+//	INT32U l;
+//} endian_test = { { 'l', '?', '?', 'b' } };
+//#define ENDIANNESS 								((char)endian_test.l)
 
 
 /*

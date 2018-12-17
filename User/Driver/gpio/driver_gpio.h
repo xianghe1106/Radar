@@ -1,12 +1,12 @@
 /*
- * Protocol.h
+ * led.h
  *
- *  Created on: Dec 11, 2018
+ *  Created on: Dec 17, 2018
  *      Author: xianghe
  */
 
-#ifndef USER_APP_PROTOCOL_H_
-#define USER_APP_PROTOCOL_H_
+#ifndef USER_DRIVER_GPIO_H_
+#define USER_DRIVER_GPIO_H_
 
 
 
@@ -17,7 +17,9 @@
 */
 
 #include "cpu.h"
-#include "XMC1300.h"
+#include "xmc_gpio.h"
+//#include "DIGITAL_IO/digital_io.h"
+#include "Dave.h"
 
 /*
 *********************************************************************************************************
@@ -33,47 +35,13 @@
 *********************************************************************************************************
 */
 
-enum
-{
-	CMD_SUCCEED = 0, DATA_OVERFLOW=1, UNSUPPORT_PARAMETER = 2, CRC_ERROR = 3,
-	SYSTEM_BUSY = 4, UNSUPPORT_CMD = 5, REV_SHORT=6, NO_CALDATA=7, FLIEPAG_ERROR=8
-};
-
 typedef struct
 {
-//	INT8U CommandType;		//1:set	0:get
-	INT8U RxParaLen;
-	INT8U *ErrorCode;
-	INT8U *Para;
-	INT8U *Output;
-	INT8U *DynamicLen;
-}ProtocolMsg_TypeDef;
-
-struct NEURON
-{
-	INT16U Command;
-	void (*Cell)(ProtocolMsg_TypeDef ProtocolMsg);
-	INT16U DataLen;
-};
-
-typedef struct
-{
-	//input para offset
-	INT8U start_byte_offset;
-	INT8U rx_len_offset;
-	INT8U device_address_offset;
-	INT8U command_offset;
-	INT8U para_start_offset;
-	INT8U stop_byte_offset;
-
-	//output pata offset
-/*	INT8U start_byte_offset;
-	INT8U rx_len_offset;
-	INT8U device_address_offset;
-	INT8U command_offset;
-	INT8U para_start_offset;
-	INT8U stop_byte_offset;*/
-}ProtocolOffset_TypeDef;
+	XMC_GPIO_PORT_t *const gpio_port;             /**< port number */
+	const XMC_GPIO_CONFIG_t gpio_config;          /**< mode, initial output level and pad driver strength / hysteresis */
+	const uint8_t gpio_pin;                       /**< pin number */
+	const XMC_GPIO_HWCTRL_t hwctrl;               /**< Hardware port control */
+}DIGITAL_IO_type;
 
 /*
 *********************************************************************************************************
@@ -81,7 +49,10 @@ typedef struct
 *********************************************************************************************************
 */
 
-
+extern const DIGITAL_IO_type LED_ORANGE;
+extern const DIGITAL_IO_type BGT24;
+extern const DIGITAL_IO_type LED_RED;
+extern const DIGITAL_IO_type LED_BLUE;
 
 /*
 *********************************************************************************************************
@@ -89,11 +60,7 @@ typedef struct
 *********************************************************************************************************
 */
 
-#define MAJOR_VERSION							1	// from 0 to 9
-#define MINOR_VERSION							0	// from 0 to 9
 
-#define START_BYTE								0x7E
-#define STOP_BYTE								0x7E
 
 
 /*
@@ -102,10 +69,14 @@ typedef struct
 *********************************************************************************************************
 */
 
-void Protocol_init(void);
-void Protocol_preprocessing(void);
-void Protocol_process(void);
-void Protocol_heart_beat(void);
+void Multi_IO_Init(void);
+
+void DIGITAL_GPIO_Init(const DIGITAL_IO_type *const handler);
+void DIGITAL_GPIO_SetOutputHigh(const DIGITAL_IO_type *const handler);
+void DIGITAL_GPIO_SetOutputLow(const DIGITAL_IO_type *const handler);
+void DIGITAL_GPIO_ToggleOutput(const DIGITAL_IO_type *const handler);
+uint32_t DIGITAL_GPIO_GetInput(const DIGITAL_IO_type *const handler);
+
 
 
 /*
@@ -114,4 +85,4 @@ void Protocol_heart_beat(void);
 *********************************************************************************************************
 */
 
-#endif /* USER_APP_PROTOCOL_H_ */
+#endif /* USER_DRIVER_LED_GPIO_H_ */

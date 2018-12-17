@@ -38,26 +38,27 @@
 
 
 #include "HostCommUART.h"
+#include "xmc_uart.h"
 
 //---------------------------------------------------------------------
 //---------------------------------------------------------------------
 
 void send_data(char *tx_buffer) {
 
-	uint32_t index = 0;
+/*	uint32_t index = 0;
 
 	while (tx_buffer[index] != 0) {
 
-		UART_TransmitWord(&UART_0, tx_buffer[index]);
+		XMC_UART_CH_Transmit(XMC_UART0_CH0, tx_buffer[index]);
 
 		index++;
 
-		/*Wait for dump buffer interrupt to fill it again with remaining data */
+		Wait for dump buffer interrupt to fill it again with remaining data
 
-		while ((UART_GetTXFIFOStatus(&UART_0) & XMC_USIC_CH_TXFIFO_EVENT_STANDARD) == 0);
+		while ((UART_GetTXFIFOStatus(XMC_UART0_CH0) & XMC_USIC_CH_TXFIFO_EVENT_STANDARD) == 0);
 
-		UART_ClearTXFIFOStatus(&UART_0, XMC_USIC_CH_TXFIFO_EVENT_STANDARD);
-	}
+		UART_ClearTXFIFOStatus(XMC_UART0_CH0, XMC_USIC_CH_TXFIFO_EVENT_STANDARD);
+	}*/
 }
 
 //---------------------------------------------------------------------
@@ -65,19 +66,19 @@ void send_data(char *tx_buffer) {
 
 void receive_data(uint8_t* receive_buffer, uint16_t nsample) {
 
-	uint8_t count = 0;
+/*	uint8_t count = 0;
 
 	//Configure receive FIFO trigger limit to 1.
-	UART_SetRXFIFOTriggerLimit(&UART_0, nsample - 1);
+	UART_SetRXFIFOTriggerLimit(XMC_UART0_CH0, nsample - 1);
 
-	while (!(UART_GetRXFIFOStatus(&UART_0) & (XMC_USIC_CH_RXFIFO_EVENT_STANDARD | XMC_USIC_CH_RXFIFO_EVENT_ALTERNATE)))
+	while (!(UART_GetRXFIFOStatus(XMC_UART0_CH0) & (XMC_USIC_CH_RXFIFO_EVENT_STANDARD | XMC_USIC_CH_RXFIFO_EVENT_ALTERNATE)))
 	{
-		receive_buffer[count] = UART_GetReceivedWord(&UART_0);
+		receive_buffer[count] = UART_GetReceivedWord(XMC_UART0_CH0);
 		count++;
 
 		if (count == nsample)
 			break;
-	}
+	}*/
 }
 
 //---------------------------------------------------------------------
