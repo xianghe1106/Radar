@@ -27,7 +27,7 @@
 							<targetPlatform archList="all" binaryParser="org.eclipse.cdt.core.GNU_ELF" id="com.ifx.xmc4000.targetPlatform.54410762" isAbstract="false" name="Windows Platform" osList="win32" superClass="com.ifx.xmc4000.targetPlatform"/>
 							<builder buildPath="${workspace_loc:/Radar_sense2Go_exe}/Release" enabledIncrementalBuild="true" id="com.ifx.XMC4000.toolchainBuilder.427158544" keepEnvironmentInBuildfile="false" managedBuildOn="true" name="XMC Builder" parallelBuildOn="true" parallelizationNumber="optimal" superClass="com.ifx.XMC4000.toolchainBuilder"/>
 							<tool id="com.ifx.xmc4000.appRelease.compiler.1145028931" name="ARM-GCC C Compiler" superClass="com.ifx.xmc4000.appRelease.compiler">
-								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level.1199715230" name="Optimization level" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="org.eclipse.cdt.cross.arm.gnu.base.option.optimization.level.size" valueType="enumerated"/>
+								<option id="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level.1199715230" name="Optimization level" superClass="org.eclipse.cdt.cross.arm.gnu.c.compiler.option.optimization.level" useByScannerDiscovery="false" value="org.eclipse.cdt.cross.arm.gnu.base.option.optimization.level.most" valueType="enumerated"/>
 								<option id="com.ifx.xmc4000.compiler.option.include.paths.1364617666" name="Include paths (-I)" superClass="com.ifx.xmc4000.compiler.option.include.paths" useByScannerDiscovery="false" valueType="includePath">
 									<listOptionValue builtIn="false" value="&quot;${workspace_loc:/${ProjName}/Libraries/XMCLib/inc}&quot;"/>
 									<listOptionValue builtIn="false" value="&quot;E:\Project Evaluation\infineon\FW_test\Radar_sense2GoL\User\Driver&quot;"/>
@@ -88,6 +88,7 @@
 									<listOptionValue builtIn="false" value="m"/>
 									<listOptionValue builtIn="false" value="Radar_Sense2GoL_Lib"/>
 								</option>
+								<option id="com.ifx.xmc4000.appLinker.option.newlib.1505962323" name="Runtime library" superClass="com.ifx.xmc4000.appLinker.option.newlib" useByScannerDiscovery="false" value="org.eclipse.cdt.cross.arm.gnu.c.link.option.newlib.nano" valueType="enumerated"/>
 								<inputType id="com.ifx.xmc4000.appLinker.inputType.1119613195" name="ARM-GCC for XMC Linker Input Type" superClass="com.ifx.xmc4000.appLinker.inputType">
 									<additionalInput kind="additionalinputdependency" paths="$(USER_OBJS)"/>
 									<additionalInput kind="additionalinput" paths="$(LIBS)"/>

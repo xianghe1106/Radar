@@ -21,6 +21,7 @@
 #include "Dave.h"
 
 #include "xmc_uart.h"
+#include "radar.h"
 
 /*
 *********************************************************************************************************
@@ -107,7 +108,7 @@ ProtocolOffset_TypeDef protocol_offset;
 */
 
 INT8U  rx_buffer[100];
-INT8U  tx_bufer[50];
+INT8U  tx_buffer[300];
 
 
 QUEUE8_Type rx_queue, *p_rx_queue = &rx_queue;
@@ -117,8 +118,8 @@ PACKET_BUFFER_Type packet_buffer;
 
 INT8U  device_address = 0x30;
 
-INT16U distance, speed, signal, amplitude;
-INT8U  motion = 1;
+//INT16U distance, speed, signal, amplitude;
+//INT8U  motion = 1;
 
 /*
 *********************************************************************************************************
@@ -189,11 +190,7 @@ const struct NEURON neuron[COMMAND_COUNT]=
 void Protocol_init(void)
 {
 	QUEUE8_Create(p_rx_queue, rx_buffer, sizeof(rx_buffer));
-//	XMC_UART_CH_Transmit(XMC_UART0_CH0, sizeof(rx_buffer));
-
 	MEM_Clr(&preprocess_buffer.count, 	sizeof(preprocess_buffer));
-	XMC_UART_CH_Transmit(XMC_UART0_CH0, sizeof(preprocess_buffer));
-//	MEM_Clr(&process_buffer.count, 		sizeof(process_buffer));
 	MEM_Clr(&packet_buffer.store_index, sizeof(packet_buffer));
 }
 
@@ -206,9 +203,9 @@ void USIC0_1_IRQHandler(void)
 	QUEUE8_Push(p_rx_queue, data);
 }
 
-void send_uart_data(INT8U *p_buffer, INT8U count)
+void send_uart_data(INT8U *p_buffer, INT16U count)
 {
-	INT8U i;
+	INT16U i;
 
 	XMC_UART_CH_Transmit(XMC_UART0_CH0, 0x7E);
 	for(i = 0; i < count; i++)
@@ -357,35 +354,71 @@ INT16U Calculate_SUM_LRC(INT8U *Packet, INT8U length)
 
 void Protocol_heart_beat(void)
 {
-	INT8U  tx_buffer[20], len;
+	INT8U  len;//tx_bufer
+	INT8U  buffer[5];
 
-	len = 14;
+	len = 9;
 
 	tx_buffer[0] = device_address;	//device_adress
-	tx_buffer[1] = len;	//len
+	tx_buffer[1] = 0;	//len
+	tx_buffer[2] = len;	//len
 
-	tx_buffer[2] = 0x01;	//command
+	tx_buffer[3] = 0x01;	//command
 
-	tx_buffer[3] = 0x00;	//error code
+	tx_buffer[4] = 0x00;	//error code
 
-	tx_buffer[4] = WORD_HIGH(distance);	//distance
-	tx_buffer[5] = WORD_LOW(distance);
+	RADAR_GetDistance(buffer);
+	tx_buffer[5] = buffer[0];	//distance
+	tx_buffer[6] = buffer[1];
 
-	tx_buffer[6] = WORD_HIGH(speed);	//speed
-	tx_buffer[7] = WORD_LOW(speed);
+	RADAR_GetSpeed(buffer);
+	tx_buffer[7] = buffer[0];	//speed
+	tx_buffer[8] = buffer[1];
 
-	tx_buffer[8] = motion;
+	RADAR_GetMotion(buffer);
+	tx_buffer[9] = buffer[0];
 
-	tx_buffer[9] = WORD_HIGH(signal);	//speed
-	tx_buffer[10] = WORD_LOW(signal);
+	RADAR_GetSignal(buffer);
+	tx_buffer[10] = buffer[0];	//speed
+	tx_buffer[11] = buffer[1];
 
-	tx_buffer[11] = WORD_HIGH(amplitude);	//speed
-	tx_buffer[12] = WORD_LOW(amplitude);
+	RADAR_GetAmplitude(buffer);
+	tx_buffer[12] = buffer[0];	//speed
+	tx_buffer[13] = buffer[1];
 
-	tx_buffer[13] = zxUTILS_Crc8(&tx_buffer[0], tx_buffer[1] - 1) & 0xFF;	//check byte
+	tx_buffer[14] = zxUTILS_Crc8(&tx_buffer[0], len + 5) & 0xFF;	//check byte
 
-	send_uart_data(tx_buffer, tx_buffer[1]);
+	send_uart_data(tx_buffer, len + 6);
+}
 
+void Protocol_RaderSamplingData(void)
+{
+	INT16U len, size;
+	INT8U  buffer[4];
+
+	size = sizeof(g_sampling_data_I);
+	len  = size + 1;
+
+
+	XMC_UART_CH_Transmit(XMC_UART0_CH0, WORD_HIGH(g_sampling_data_I[0]));
+	XMC_UART_CH_Transmit(XMC_UART0_CH0, WORD_LOW(g_sampling_data_I[0]));
+
+	tx_buffer[0] = device_address;	//device_adress
+	tx_buffer[1] = WORD_HIGH(len);	//len
+	tx_buffer[2] = WORD_LOW(len);
+
+	tx_buffer[3] = 0x02;	//command
+
+	tx_buffer[4] = 0x00;	//error code
+
+	MEM_Copy(&tx_buffer[5], g_sampling_data_I, sizeof(g_sampling_data_I));
+
+	RADAR_GetMotion(buffer);
+	tx_buffer[5 + size] = buffer[0];
+
+	tx_buffer[len + 5] = zxUTILS_Crc8(&tx_buffer[0], len+5) & 0xFF;	//check byte
+
+	send_uart_data(tx_buffer, len + 6);
 }
 
 void Protocol_process(void)
@@ -417,11 +450,11 @@ void Protocol_process(void)
 
 	ptr_buffer = &packet_buffer.buffer[packet_buffer.process_index][0];
 
-	rxLen = ptr_buffer[2];
+	rxLen = ptr_buffer[3];
 	if((ptr_buffer[0] != START_BYTE)
 		|| (ptr_buffer[rxLen + 1] != STOP_BYTE))
 	{
-		XMC_UART_CH_Transmit(XMC_UART0_CH0, 0x01);
+//		XMC_UART_CH_Transmit(XMC_UART0_CH0, 0x01);
 
 		packet_buffer.process_index++;
 		packet_buffer.process_index = packet_buffer.process_index % PACKET_MAX_ENTRIES;
@@ -431,19 +464,19 @@ void Protocol_process(void)
 	packet_address = ptr_buffer[1];
 	if(packet_address != device_address)
 	{
-		XMC_UART_CH_Transmit(XMC_UART0_CH0, 0x02);
+//		XMC_UART_CH_Transmit(XMC_UART0_CH0, 0x02);
 		packet_buffer.process_index++;
 		packet_buffer.process_index = packet_buffer.process_index % PACKET_MAX_ENTRIES;
 		return;
 	}
 
-/*	crcValue = zxUTILS_Crc8(&ptr_buffer[1], rxLen - 1);
+	crcValue = zxUTILS_Crc8(&ptr_buffer[1], rxLen - 1);
 	if(crcValue != ptr_buffer[rxLen])
 	{
 		errorCode = CRC_ERROR;
-	}*/
+	}
 
-	cmdCode = ptr_buffer[3];
+	cmdCode = ptr_buffer[4];
 	if(errorCode == CMD_SUCCEED)
 	{
 		//process packet
@@ -465,13 +498,13 @@ void Protocol_process(void)
 
 				//input data
 	//			ProtocolMsg.CommandType = cmdCode >> 15;
-				ProtocolMsg.RxParaLen  	= ptr_buffer[2] - 4;	//number of parameters
-				ProtocolMsg.Para        = &ptr_buffer[4];
+				ProtocolMsg.RxParaLen  	= ptr_buffer[3] - 5;	//number of parameters
+				ProtocolMsg.Para        = &ptr_buffer[5];
 
 				//output data
 				ProtocolMsg.ErrorCode   = &errorCode;
 	//			ProtocolMsg.Output      = &paraCache[0];   	//paraCache
-				ProtocolMsg.Output      = &tx_bufer[4];   	//paraCache
+				ProtocolMsg.Output      = &tx_buffer[5];   	//paraCache
 				ProtocolMsg.DynamicLen  = &dynamicLen;
 				(neuron[index].Cell)(ProtocolMsg);
 				break;
@@ -493,16 +526,17 @@ void Protocol_process(void)
 		dynamicLen = 0;
 	}
 
-	tx_bufer[0] = device_address;
-	tx_bufer[1] = staticLen + dynamicLen + 5;
-	tx_bufer[2] = cmdCode;
-	tx_bufer[3] = errorCode;
+	tx_buffer[0] = device_address;
+	tx_buffer[1] = 0x00;
+	tx_buffer[2] = staticLen + dynamicLen + 6;
+	tx_buffer[3] = cmdCode;
+	tx_buffer[4] = errorCode;
 
-	crcValue = zxUTILS_Crc8(&tx_bufer[0], tx_bufer[1] - 1);
+	crcValue = zxUTILS_Crc8(&tx_buffer[0], tx_buffer[2] - 1);
 //	XMC_UART_CH_Transmit(XMC_UART0_CH0, crcValue);
-	tx_bufer[tx_bufer[1] - 1] = crcValue;
+	tx_buffer[tx_buffer[2] - 1] = crcValue;
 
-	send_uart_data(tx_bufer, tx_bufer[1]);
+	send_uart_data(tx_buffer, tx_buffer[2]);
 
 	packet_buffer.process_index++;
 	packet_buffer.process_index = packet_buffer.process_index % PACKET_MAX_ENTRIES;

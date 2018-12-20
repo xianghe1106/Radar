@@ -92,7 +92,7 @@ void Driver_uart_init(void)
 	XMC_GPIO_Init(XMC_GPIO_PORT2, 0, &tx_pin_config);
 
 	/* UART configuration */
-	uart_config.baudrate      = 19200U;
+	uart_config.baudrate      = UART_BAUDRATE;
 	uart_config.data_bits     = 8U;
 	uart_config.frame_length  = 8U;
 	uart_config.stop_bits     = 1U;

@@ -106,6 +106,7 @@ void Protocol_init(void);
 void Protocol_preprocessing(void);
 void Protocol_process(void);
 void Protocol_heart_beat(void);
+void Protocol_RaderSamplingData(void);
 
 
 /*
